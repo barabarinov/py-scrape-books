@@ -18,28 +18,12 @@ class BooksSpider(scrapy.Spider):
 
     @staticmethod
     def parse_book(response: Response) -> dict[str, str]:
-        title = response.css("h1::text").get()
-        price = response.css(".price_color::text").get()
-        stock = response.css(
-            ".instock.availability::text"
-        ).re_first(r"\d+")
-        rating = response.css(".star-rating::attr(class)").re_first(
-            r"Two|Three|Four|Five|One"
-        )
-        category = response.css(
-            ".breadcrumb li:nth-last-child(2) a::text"
-        ).get()
-        description = response.css("#product_description + p::text").get()
-        upc = response.css(
-            '.table-striped th:contains("UPC") + td::text'
-        ).get()
-
         yield {
-            "title": title,
-            "price": price,
-            "amount_in_stock": stock,
-            "rating": rating,
-            "category": category,
-            "description": description,
-            "upc": upc,
+            "title": response.css("h1::text").get(),
+            "price": response.css(".price_color::text").get(),
+            "amount_in_stock": response.css(".instock.availability::text").re_first(r"\d+"),
+            "rating": response.css(".star-rating::attr(class)").re_first(r"Two|Three|Four|Five|One"),
+            "category": response.css(".breadcrumb li:nth-last-child(2) a::text").get(),
+            "description": response.css("#product_description + p::text").get(),
+            "upc": response.css('.table-striped th:contains("UPC") + td::text').get(),
         }
