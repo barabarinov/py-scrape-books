@@ -17,13 +17,40 @@ class BooksSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse)
 
     @staticmethod
-    def parse_book(response: Response) -> dict[str, str]:
+    def _get_title(response: Response) -> str:
+        return response.css("h1::text").get()
+
+    @staticmethod
+    def _get_price(response: Response) -> str:
+        return response.css(".price_color::text").get()
+
+    @staticmethod
+    def _get_amount_in_stock(response: Response) -> str:
+        return response.css(".instock.availability::text").re_first(r"\d+")
+
+    @staticmethod
+    def _get_rating(response: Response) -> str:
+        return response.css(".star-rating").re_first(r"Two|Three|Four|Five|One")
+
+    @staticmethod
+    def _get_category(response: Response) -> str:
+        return response.css(".breadcrumb li:nth-last-child(2) a::text").get()
+
+    @staticmethod
+    def _get_description(response: Response) -> str:
+        return response.css("#product_description + p::text").get()
+
+    @staticmethod
+    def _get_upc(response: Response) -> str:
+        return response.css('.table-striped th:contains("UPC") + td::text').get()
+
+    def parse_book(self, response: Response) -> dict[str, str]:
         yield {
-            "title": response.css("h1::text").get(),
-            "price": response.css(".price_color::text").get(),
-            "amount_in_stock": response.css(".instock.availability::text").re_first(r"\d+"),
-            "rating": response.css(".star-rating").re_first(r"Two|Three|Four|Five|One"),
-            "category": response.css(".breadcrumb li:nth-last-child(2) a::text").get(),
-            "description": response.css("#product_description + p::text").get(),
-            "upc": response.css('.table-striped th:contains("UPC") + td::text').get(),
+            "title": self._get_title(response),
+            "price": self._get_price(response),
+            "amount_in_stock": self._get_amount_in_stock(response),
+            "rating": self._get_rating(response),
+            "category": self._get_category(response),
+            "description": self._get_description(response),
+            "upc": self._get_upc(response),
         }
